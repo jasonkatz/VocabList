@@ -3,7 +3,7 @@ var Content = React.createClass({
         return (
             <div>
                 <NavBar />
-                <VocabTable />
+                <VocabTable data={this.props.data} />
             </div>
         );
     }
@@ -49,7 +49,7 @@ var VocabTable = React.createClass({
                         </tr>
                     </thead>
                     <tbody>
-                        <WordList />
+                        <WordList data={this.props.data} />
                         <NewWordForm />
                     </tbody>
                 </table>
@@ -60,11 +60,31 @@ var VocabTable = React.createClass({
 
 var WordList = React.createClass({
     render: function() {
+        var wordNodes = this.props.data.map(function (pair) {
+            return (
+                <Word word={pair.word} definition={pair.definition} />
+            );
+        });
+        return (
+            <div className="wordList">
+                {wordNodes}
+            </div>
+        );
+    }
+});
+
+var Word = React.createClass({
+    render: function() {
         return (
             <tr>
-                <td>Ruby</td>
-                <td>Test</td>
-                <td>!</td>
+                <td>{this.props.word}</td>
+                <td>{this.props.definition}</td>
+                <td>
+                    <div className="form-group">
+                        <button type="button" className="btn btn-default" id="editButton" style={{marginRight:'10px'}}>Edit</button>
+                        <button type="button" className="btn btn-danger" id="deleteButton">Delete</button>
+                    </div>
+                </td>
             </tr>
         );
     }
@@ -78,7 +98,7 @@ var NewWordForm = React.createClass({
                 <td><input type="text" className="form-control" id="newDefinition" placeholder="New Definition" /></td>
                 <td>
                     <div className="form-group">
-                        <button type="submit" className="btn btn-success" id="addButton">Add</button>
+                        <button type="submit" className="btn btn-success" id="addButton" style={{marginRight:'10px'}}>Add</button>
                         <button type="button" className="btn btn-warning" id="clearButton">Clear</button>
                     </div>
                 </td>
@@ -87,10 +107,12 @@ var NewWordForm = React.createClass({
     }
 });
 
+var data = [
+    {word: "hello", definition: "world"},
+    {word: "ruby", definition: "test"}
+]
+
 React.render(
-    <Content />,
+    <Content data={data} url="words.json" />,
     document.getElementById('content')
 );
-
-/*
-*/
