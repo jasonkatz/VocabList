@@ -109,7 +109,7 @@ var NewWordForm = React.createClass({
 
 var data = [
     {word: "hello", definition: "world"},
-    {word: "ruby", definition: "test"}
+    {word: "credential", definition: "helper"}
 ]
 
 React.render(
