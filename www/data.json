@@ -1,0 +1,18 @@
+[
+    {
+        "word":     "test",
+        "definition": "one"
+    },
+    {
+        "word":     "test",
+        "definition":   "two"
+    },
+    {
+        "word":     "test",
+        "definition":   "three"
+    },
+    {
+        "word":     "test",
+        "definition":   "four"
+    }
+]

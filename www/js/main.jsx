@@ -1,9 +1,29 @@
 var Content = React.createClass({
+    loadCommentsFromServer: function() {
+        $.ajax({
+            url: this.props.url,
+            dataType: 'json',
+            cache: false,
+            success: function(data) {
+                this.setState({data: data});
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error(this.props.url, status, err.toString());
+            }.bind(this)
+        });
+    },
+    getInitialState: function() {
+        return { data: [] };
+    },
+    componentDidMount: function() {
+        this.loadCommentsFromServer();
+        setInterval(this.loadCommentsFromServer, this.props.pollInterval);
+    },
     render: function() {
         return (
             <div>
                 <NavBar />
-                <VocabTable data={this.props.data} />
+                <VocabTable data={this.state.data} />
             </div>
         );
     }
@@ -37,9 +57,18 @@ var NavBar = React.createClass({
 });
 
 var VocabTable = React.createClass({
+    setData: function() {
+        var wordNodes = [];
+        this.props.data.map(function (pair) {
+            wordNodes.push(
+                <Word word={pair.word} definition={pair.definition} />
+            );
+        });
+        return wordNodes;
+    },
     render: function() {
         return (
-            <div className="container">
+            <div className="vocabTable container">
                 <table className="table table-striped table-hover table-bordered" style={{marginTop:'90px'}}>
                     <thead>
                         <tr>
@@ -49,25 +78,12 @@ var VocabTable = React.createClass({
                         </tr>
                     </thead>
                     <tbody>
-                        <WordList data={this.props.data} />
-                        <NewWordForm />
+                        {this.setData()}
+                        <tr>
+                            <WordForm />
+                        </tr>
                     </tbody>
                 </table>
-            </div>
-        );
-    }
-});
-
-var WordList = React.createClass({
-    render: function() {
-        var wordNodes = this.props.data.map(function (pair) {
-            return (
-                <Word word={pair.word} definition={pair.definition} />
-            );
-        });
-        return (
-            <div className="wordList">
-                {wordNodes}
             </div>
         );
     }
@@ -90,19 +106,31 @@ var Word = React.createClass({
     }
 });
 
-var NewWordForm = React.createClass({
+var WordForm = React.createClass({
+    handleSubmit: function(e) {
+        e.preventDefault();
+        var word = React.findDOMNode(this.refs.word).value.trim();
+        var definition = React.findDOMNode(this.refs.definition).value.trim();
+        if (!word || !definition) {
+            return;
+        }
+        // TODO: send request
+        var word = React.findDOMNode(this.refs.word).value = '';
+        var definition = React.findDOMNode(this.refs.definition).value = '';
+        return;
+    },
     render: function() {
         return (
-            <tr>
-                <td><input type="text" className="form-control" id="newWord" placeholder="New Word" /></td>
-                <td><input type="text" className="form-control" id="newDefinition" placeholder="New Definition" /></td>
+            <form className="wordForm">
+                <td><input type="text" className="form-control" ref="word" placeholder="New Word" /></td>
+                <td><input type="text" className="form-control" ref="definition" placeholder="New Definition" /></td>
                 <td>
                     <div className="form-group">
-                        <button type="submit" className="btn btn-success" id="addButton" style={{marginRight:'10px'}}>Add</button>
-                        <button type="button" className="btn btn-warning" id="clearButton">Clear</button>
+                        <button type="button" className="btn btn-success" onClick={this.handleSubmit} style={{marginRight:'10px'}}>Add</button>
+                        <button type="button" className="btn btn-warning">Clear</button>
                     </div>
                 </td>
-            </tr>
+            </form>
         );
     }
 });
@@ -113,6 +141,6 @@ var data = [
 ]
 
 React.render(
-    <Content data={data} url="words.json" />,
+    <Content url="data.json" pollInterval={1000} />,
     document.getElementById('content')
 );
