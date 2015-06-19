@@ -1,10 +1,26 @@
 var Content = React.createClass({
-    loadCommentsFromServer: function() {
+    loadWordsFromServer: function() {
         $.ajax({
-            url: this.props.url,
+            url: this.props.url + "?type=getWords",
+            //url: this.props.url,
             dataType: 'json',
             cache: false,
             success: function(data) {
+                this.setState({data: data});
+                //console.log(data);
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error(this.props.url, status, err.toString());
+            }.bind(this)
+        });
+    },
+    handleWordSubmit: function(word) {
+        $.ajax({
+            url: this.props.url + "?type=addWord",
+            dataType: 'json',
+            type: 'POST',
+            data: word,
+            success: function (data) {
                 this.setState({data: data});
             }.bind(this),
             error: function(xhr, status, err) {
@@ -16,14 +32,14 @@ var Content = React.createClass({
         return { data: [] };
     },
     componentDidMount: function() {
-        this.loadCommentsFromServer();
-        setInterval(this.loadCommentsFromServer, this.props.pollInterval);
+        this.loadWordsFromServer();
+        setInterval(this.loadWordsFromServer, this.props.pollInterval);
     },
     render: function() {
         return (
             <div>
                 <NavBar />
-                <VocabTable data={this.state.data} />
+                <VocabTable data={this.state.data} onWordSubmit={this.handleWordSubmit} />
             </div>
         );
     }
@@ -66,6 +82,9 @@ var VocabTable = React.createClass({
         });
         return wordNodes;
     },
+    handleWordSubmit: function(word) {
+        this.props.onWordSubmit(word);
+    },
     render: function() {
         return (
             <div className="vocabTable container">
@@ -80,7 +99,7 @@ var VocabTable = React.createClass({
                     <tbody>
                         {this.setData()}
                         <tr>
-                            <WordForm />
+                            <WordForm onWordSubmit={this.handleWordSubmit} />
                         </tr>
                     </tbody>
                 </table>
@@ -114,7 +133,7 @@ var WordForm = React.createClass({
         if (!word || !definition) {
             return;
         }
-        // TODO: send request
+        this.props.onWordSubmit({word: word, definition: definition});
         var word = React.findDOMNode(this.refs.word).value = '';
         var definition = React.findDOMNode(this.refs.definition).value = '';
         return;
@@ -141,6 +160,6 @@ var data = [
 ]
 
 React.render(
-    <Content url="data.json" pollInterval={1000} />,
+    <Content url="php/dataManager.php" pollInterval={1000} />,
     document.getElementById('content')
 );
