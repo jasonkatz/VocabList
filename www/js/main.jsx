@@ -28,6 +28,20 @@ var Content = React.createClass({
             }.bind(this)
         });
     },
+    handleWordDelete: function(id) {
+        $.ajax({
+            url: this.props.url + "?type=deleteWord",
+            dataType: 'json',
+            type: 'POST',
+            data: id,
+            success: function (data) {
+                this.setState({data: data});
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error(this.props.url, status, err.toString());
+            }.bind(this)
+        });
+    },
     getInitialState: function() {
         return { data: [] };
     },
@@ -39,7 +53,7 @@ var Content = React.createClass({
         return (
             <div>
                 <NavBar />
-                <VocabTable data={this.state.data} onWordSubmit={this.handleWordSubmit} />
+                <VocabTable data={this.state.data} onWordSubmit={this.handleWordSubmit} onWordDelete={this.handleWordDelete} />
             </div>
         );
     }
@@ -74,16 +88,20 @@ var NavBar = React.createClass({
 
 var VocabTable = React.createClass({
     setData: function() {
+        var self = this;
         var wordNodes = [];
-        this.props.data.map(function (pair) {
+        $.each(self.props.data, function (index, obj) {
             wordNodes.push(
-                <Word word={pair.word} definition={pair.definition} />
+                <Word id={obj.id} word={obj.word} definition={obj.definition} onWordDelete={self.handleWordDelete} />
             );
         });
         return wordNodes;
     },
     handleWordSubmit: function(word) {
         this.props.onWordSubmit(word);
+    },
+    handleWordDelete: function(id) {
+        this.props.onWordDelete(id);
     },
     render: function() {
         return (
@@ -109,6 +127,11 @@ var VocabTable = React.createClass({
 });
 
 var Word = React.createClass({
+    handleDelete: function(e) {
+        e.preventDefault();
+        this.props.onWordDelete(this.props.id);
+        return;
+    },
     render: function() {
         return (
             <tr>
@@ -117,7 +140,7 @@ var Word = React.createClass({
                 <td>
                     <div className="form-group">
                         <button type="button" className="btn btn-default" id="editButton" style={{marginRight:'10px'}}>Edit</button>
-                        <button type="button" className="btn btn-danger" id="deleteButton">Delete</button>
+                        <button type="button" className="btn btn-danger" id="deleteButton" onClick={this.handleDelete}>Delete</button>
                     </div>
                 </td>
             </tr>

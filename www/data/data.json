@@ -1,18 +1,12 @@
 [
     {
-        "word":     "test",
-        "definition": "one"
+        "id": "CE4E51BF-D68A-42F7-BF50-F944C4E3DE95",
+        "word": "fasd",
+        "definition": "asd"
     },
     {
-        "word":     "test",
-        "definition":   "two"
-    },
-    {
-        "word":     "test",
-        "definition":   "three"
-    },
-    {
-        "word":     "test",
-        "definition":   "four"
+        "id": "0074C8FA-4800-4ACE-8F8E-33BF4E5278F9",
+        "word": "d",
+        "definition": "d"
     }
 ]
