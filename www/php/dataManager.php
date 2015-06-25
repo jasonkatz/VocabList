@@ -31,6 +31,7 @@
         $wordsDecoded = json_decode($words, true);
         $deleting = null;
         foreach ($wordsDecoded as $objKey => $obj) {
+            error_log($_POST['id']);
             if ($objKey == 'id' && $obj == $_POST['id']) {
                 $deleting = $obj;
                 unset($wordsDecoded[$objKey]);
