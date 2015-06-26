@@ -1,22 +1,22 @@
-{
-    "4": {
-        "id": "A291760B-459E-488E-A1F9-4B980E7706B3",
-        "word": "ruby",
-        "definition": "test"
+[
+    {
+        "id": "2432972A-2647-4C31-867D-07C1846F2E20",
+        "word": "\uc548\ub155\ud558\uc138\uc694",
+        "definition": "Hello"
     },
-    "5": {
-        "id": "E3EBD6F7-956C-4C2E-BA74-343668DA49B9",
-        "word": "asdf",
-        "definition": "asdf"
+    {
+        "id": "7CA486A0-8204-433E-B589-E6D8861480F2",
+        "word": "\uc74c\uc2dd",
+        "definition": "Food"
     },
-    "6": {
-        "id": "1496C8B2-DBA7-4252-B88B-BCB6C30F267C",
-        "word": "ra",
-        "definition": "as"
+    {
+        "id": "A61B850A-F8DE-49DB-ADD5-D9B6F1865576",
+        "word": "\uc911\uad6d",
+        "definition": "China"
     },
-    "7": {
-        "id": "4861F84C-0F9A-4CCD-A743-E2ED0159CC3B",
-        "word": "asdf",
-        "definition": "asdf"
+    {
+        "id": "AF25C0E2-FC9F-43CE-A135-A3E089CB94E7",
+        "word": "\ub098\ubb34",
+        "definition": "Tree"
     }
-}
+]

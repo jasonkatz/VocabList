@@ -108,12 +108,12 @@ var VocabTable = React.createClass({
     render: function() {
         return (
             <div className="vocabTable container">
-                <table className="table table-striped table-hover table-bordered" style={{marginTop:'90px'}}>
+                <table className="ui table" style={{marginTop:'90px'}}>
                     <thead>
                         <tr>
-                            <td>Word</td>
-                            <td>Definition</td>
-                            <td>Action</td>
+                            <th>Word</th>
+                            <th>Definition</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -137,12 +137,16 @@ var Word = React.createClass({
     render: function() {
         return (
             <tr>
-                <td>{this.props.word}</td>
-                <td>{this.props.definition}</td>
+                <td className="type-1">
+                    {this.props.word}
+                </td>
+                <td className="type-1">
+                    {this.props.definition}
+                </td>
                 <td>
-                    <div className="form-group">
-                        <button type="button" className="btn btn-default" id="editButton" style={{marginRight:'10px'}}>Edit</button>
-                        <button type="button" className="btn btn-danger" id="deleteButton" onClick={this.handleDelete}>Delete</button>
+                    <div className="ui buttons">
+                        <div className="ui blue basic button">Edit</div>
+                        <div className="negative ui basic button" onClick={this.handleDelete}>Delete</div>
                     </div>
                 </td>
             </tr>
@@ -170,12 +174,20 @@ var WordForm = React.createClass({
     render: function() {
         return (
             <form className="wordForm">
-                <td><input type="text" className="form-control" ref="word" placeholder="New Word" /></td>
-                <td><input type="text" className="form-control" ref="definition" placeholder="New Definition" /></td>
                 <td>
-                    <div className="form-group">
-                        <button type="button" className="btn btn-success" onClick={this.handleSubmit} style={{marginRight:'10px'}}>Add</button>
-                        <button type="button" className="btn btn-warning" onClick={this.handleClear}>Clear</button>
+                    <div className="ui fluid input focus">
+                        <input type="text" ref="word" style={{width:'100%'}} placeholder="New Word" />
+                    </div>
+                </td>
+                <td>
+                    <div className="ui fluid input focus">
+                        <input type="text" ref="definition" style={{width:'100%'}} placeholder="New Definition" />
+                    </div>
+                </td>
+                <td>
+                    <div className="ui buttons">
+                        <div className="positive ui basic button" onClick={this.handleSubmit}>Add</div>
+                        <div className="ui yellow basic button" onClick={this.handleClear}>Clear</div>
                     </div>
                 </td>
             </form>
