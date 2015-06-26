@@ -53,10 +53,14 @@ var Content = React.createClass({
     },
     render: function() {
         return (
-            <div>
-                <NavBar />
-                <VocabTable data={this.state.data} onWordSubmit={this.handleWordSubmit} onWordDelete={this.handleWordDelete} />
-            </div>
+            <main className="ui page grid">
+                <div className="row">
+                    <div className="column">
+                        <NavBar />
+                        <VocabTable data={this.state.data} onWordSubmit={this.handleWordSubmit} onWordDelete={this.handleWordDelete} />
+                    </div>
+                </div>
+            </main>
         );
     }
 });
@@ -64,25 +68,10 @@ var Content = React.createClass({
 var NavBar = React.createClass({
     render: function() {
         return (
-            <nav className="navbar navbar-inverse navbar-fixed-top">
-                <div className="container">
-                    <div className="navbar-header">
-                        <button type="button" className="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                            <span className="sr-only">Toggle navigation</span>
-                            <span className="icon-bar"></span>
-                            <span className="icon-bar"></span>
-                            <span className="icon-bar"></span>
-                        </button>
-                        <a className="navbar-brand" href="#">Vocabulary List</a>
-                    </div>
-                    <div id="navbar" className="collapse navbar-collapse">
-                        <ul className="nav navbar-nav">
-                            <li className="active"><a href="#">Home</a></li>
-                            <li><a href="#about">About</a></li>
-                            <li><a href="#contact">Contact</a></li>
-                        </ul>
-                    </div>
-                </div>
+            <nav className="ui fixed menu inverted navbar">
+                <a href="#" className="brand item">Vocabulary List</a>
+                <a href="#" className="item active">Home</a>
+                <a href="#" className="item">Dictionaries</a>
             </nav>
         );
     }
@@ -116,7 +105,7 @@ var VocabTable = React.createClass({
                             <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="type-1">
                         {this.setData()}
                         <tr>
                             <WordForm onWordSubmit={this.handleWordSubmit} />
@@ -137,10 +126,10 @@ var Word = React.createClass({
     render: function() {
         return (
             <tr>
-                <td className="type-1">
+                <td>
                     {this.props.word}
                 </td>
-                <td className="type-1">
+                <td>
                     {this.props.definition}
                 </td>
                 <td>
