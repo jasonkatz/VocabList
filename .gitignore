@@ -17,4 +17,8 @@
 ehthumbs.db
 Thumbs.db
 
+# Vim swap files
 *.swp
+
+# Data files
+www/data/*
