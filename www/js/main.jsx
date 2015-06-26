@@ -15,6 +15,7 @@ var Content = React.createClass({
         });
     },
     handleWordSubmit: function(word) {
+        console.log("Adding word: " + JSON.stringify(word));
         $.ajax({
             url: this.props.url + "?type=addWord",
             dataType: 'json',
@@ -29,6 +30,7 @@ var Content = React.createClass({
         });
     },
     handleWordDelete: function(id) {
+        console.log("Deleting word: " + JSON.stringify(id));
         $.ajax({
             url: this.props.url + "?type=deleteWord",
             dataType: 'json',
@@ -129,7 +131,7 @@ var VocabTable = React.createClass({
 var Word = React.createClass({
     handleDelete: function(e) {
         e.preventDefault();
-        this.props.onWordDelete(this.props.id);
+        this.props.onWordDelete({id: this.props.id});
         return;
     },
     render: function() {
@@ -157,10 +159,14 @@ var WordForm = React.createClass({
             return;
         }
         this.props.onWordSubmit({word: word, definition: definition});
+        this.handleClear();
+        return;
+    },
+    handleClear: function() {
         var word = React.findDOMNode(this.refs.word).value = '';
         var definition = React.findDOMNode(this.refs.definition).value = '';
         return;
-    },
+    }, 
     render: function() {
         return (
             <form className="wordForm">
@@ -169,7 +175,7 @@ var WordForm = React.createClass({
                 <td>
                     <div className="form-group">
                         <button type="button" className="btn btn-success" onClick={this.handleSubmit} style={{marginRight:'10px'}}>Add</button>
-                        <button type="button" className="btn btn-warning">Clear</button>
+                        <button type="button" className="btn btn-warning" onClick={this.handleClear}>Clear</button>
                     </div>
                 </td>
             </form>

@@ -1,12 +1,22 @@
-[
-    {
-        "id": "CE4E51BF-D68A-42F7-BF50-F944C4E3DE95",
-        "word": "fasd",
-        "definition": "asd"
+{
+    "4": {
+        "id": "A291760B-459E-488E-A1F9-4B980E7706B3",
+        "word": "ruby",
+        "definition": "test"
     },
-    {
-        "id": "0074C8FA-4800-4ACE-8F8E-33BF4E5278F9",
-        "word": "d",
-        "definition": "d"
+    "5": {
+        "id": "E3EBD6F7-956C-4C2E-BA74-343668DA49B9",
+        "word": "asdf",
+        "definition": "asdf"
+    },
+    "6": {
+        "id": "1496C8B2-DBA7-4252-B88B-BCB6C30F267C",
+        "word": "ra",
+        "definition": "as"
+    },
+    "7": {
+        "id": "4861F84C-0F9A-4CCD-A743-E2ED0159CC3B",
+        "word": "asdf",
+        "definition": "asdf"
     }
-]
+}
