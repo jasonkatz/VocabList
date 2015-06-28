@@ -123,9 +123,31 @@ var Word = React.createClass({
         this.props.onWordDelete({id: this.props.id});
         return;
     },
+    handleEdit: function(e) {
+        e.preventDefault();
+        // Grab buttons
+        var editButton = $('#' + this.props.id).find('#editButton');
+        var deleteButton = $('#' + this.props.id).find('#deleteButton');
+        // Change styling
+        editButton.removeClass('blue').addClass('positive');
+        deleteButton.removeClass('negative').addClass('yellow');
+        // Change text
+        editButton.text('Done');
+        deleteButton.text('Cancel');
+        // Change event handlers
+        editButton.attr('onClick', this.handleEditSubmit);
+        deleteButton.attr('onClick', this.handleEditCancel);
+        return;
+    },
+    handleEditSubmit: function(e) {
+        console.log('submitted edit');
+    },
+    handleEditCancel: function(e) {
+        console.log('cancelled edit');
+    },
     render: function() {
         return (
-            <tr>
+            <tr id={this.props.id}>
                 <td>
                     {this.props.word}
                 </td>
@@ -134,8 +156,8 @@ var Word = React.createClass({
                 </td>
                 <td>
                     <div className="ui buttons">
-                        <div className="ui blue basic button">Edit</div>
-                        <div className="negative ui basic button" onClick={this.handleDelete}>Delete</div>
+                        <div className="ui blue basic button" id="editButton" onClick={this.handleEdit}>Edit</div>
+                        <div className="negative ui basic button" id="deleteButton" onClick={this.handleDelete}>Delete</div>
                     </div>
                 </td>
             </tr>
