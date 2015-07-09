@@ -1,42 +1,67 @@
 <?php
     $requestType = $_GET['type'];
-    $words = file_get_contents('../data/data.json');
-    if ($requestType == 'getWords') {
-        loadWords($words);
+    $data = file_get_contents('../data/data.json');
+    if ($requestType == 'getDictionaries') {
+        loadDictionaries($data);
+    } elseif ($requestType == 'getWords') {
+        loadWords($data);
     } elseif ($requestType == 'addWord') {
-        addWord($words);
+        addWord($data);
     } elseif ($requestType == 'deleteWord') {
-        deleteWord($words);
-    }
+        deleteWord($data);
+    } 
 
-    function loadWords($words) {
+    function loadDictionaries($data) {
+        $dataDecoded = json_decode($data, true);
         header('HTTP/1.1 200 OK');
         header('Content-Type: application/json');
         header('Cache-Control: no-cache');
-        echo $words;
+        $results = array();
+        foreach ($dataDecoded as $index => $obj) {
+            foreach ($obj as $objKey => $objVal) {
+                if ($objKey == 'dictionaryId') {
+                    $id = $objVal;
+                } elseif ($objKey == 'name') {
+                    $name = $objVal;
+                }
+            }
+            $newObj = array(
+                "id" => $id,
+                "name" => $name
+            );
+            array_push($results, $newObj);
+        }
+        echo json_encode($results, JSON_PRETTY_PRINT);
     }
 
-    function addWord($words) {
-        $wordsDecoded = json_decode($words, true);
-        $wordsDecoded[] = ['id'         => getNewId(),
-                           'word'       => $_POST['word'],
-                           'definition' => $_POST['definition']];
-        $words = json_encode($wordsDecoded, JSON_PRETTY_PRINT);
-        file_put_contents('../data/data.json', $words);
+    function loadWords($data) {
         header('HTTP/1.1 200 OK');
         header('Content-Type: application/json');
         header('Cache-Control: no-cache');
-        echo $words;
+        echo $data;
     }
 
-    function deleteWord($words) {
-        $wordsDecoded = json_decode($words, true);
+    function addWord($data) {
+        $dataDecoded = json_decode($data, true);
+        $dataDecoded[] = ['id'         => getNewId(),
+                          'word'       => $_POST['word'],
+                          'definition' => $_POST['definition']];
+        $data = json_encode($dataDecoded, JSON_PRETTY_PRINT);
+        file_put_contents('../data/data.json', $data);
+        header('HTTP/1.1 200 OK');
+        header('Content-Type: application/json');
+        header('Cache-Control: no-cache');
+        echo $data;
+    }
+
+    function deleteWord($data) {
+        $dataDecoded = json_decode($data, true);
         $deleting = null;
-        foreach ($wordsDecoded as $index => $obj) {
+        foreach ($dataDecoded as $index => $obj) {
             foreach ($obj as $objKey => $objVal) {
                 if ($objKey == 'id' && $objVal == $_POST['id']) {
                     $deleting = $obj;
-                    unset($wordsDecoded[$index]);
+                    unset($dataDecoded[$index]);
                 }
             }
         }
@@ -51,12 +76,12 @@
             echo $error;
             return;
         }
-        $words = json_encode($wordsDecoded, JSON_PRETTY_PRINT);
-        file_put_contents('../data/data.json', $words);
+        $data = json_encode($dataDecoded, JSON_PRETTY_PRINT);
+        file_put_contents('../data/data.json', $data);
         header('HTTP/1.1 200 OK');
         header('Content-Type: application/json');
         header('Cache-Control: no-cache');
-        echo $words;
+        echo $data;
     }
 
     function getNewId() {

@@ -1,13 +1,29 @@
 var Content = React.createClass({
-    loadWordsFromServer: function() {
+    loadDictionariesFromServer: function() {
         $.ajax({
-            url: this.props.url + "?type=getWords",
-            //url: this.props.url,
+            url: this.props.url + "?type=getDictionaries",
             dataType: 'json',
             cache: false,
             success: function(data) {
-                this.setState({data: data});
-                //console.log(data);
+                this.setState({
+                    dictionaries: data,
+                });
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error(this.props.url, status, err.toString());
+            }.bind(this)
+        });
+    },
+    loadWordsFromServer: function() {
+        $.ajax({
+            url: this.props.url + "?type=getWords",
+            dataType: 'json',
+            cache: false,
+            success: function(data) {
+                this.setState({
+                    data: data,
+                    filterText: this.state.filterText
+                });
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error(this.props.url, status, err.toString());
@@ -44,12 +60,26 @@ var Content = React.createClass({
             }.bind(this)
         });
     },
+    handleDictionaryChange: function(id) {
+        console.log("Changing dictionary to " + JSON.stringify(id));
+    },
     getInitialState: function() {
-        return { data: [] };
+        return { 
+            data: [],
+            dictionaries: [],
+            currentDictionaryId: '',
+            filterText: ''
+        };
+    },
+    handleFilterChange: function(filterText) {
+        this.setState({filterText: filterText});
     },
     componentDidMount: function() {
-        this.loadWordsFromServer();
-        setInterval(this.loadWordsFromServer, this.props.pollInterval);
+        this.loadDictionariesFromServer();
+        setInterval(this.loadDictionariesFromServer, this.props.pollInterval);
+        //this.loadWordsFromServer();
+        //setInterval(this.loadWordsFromServer, this.props.pollInterval);
+        //$('.ui.dropdown').dropdown();
     },
     render: function() {
         return (
@@ -57,7 +87,9 @@ var Content = React.createClass({
                 <div className="row">
                     <div className="column">
                         <NavBar />
-                        <VocabTable data={this.state.data} onWordSubmit={this.handleWordSubmit} onWordDelete={this.handleWordDelete} />
+                        <DictionarySelector data={this.state.dictionaries} onDictionaryChange={this.handleDictionaryChange} />
+                        <SearchBar filterText={this.state.filterText} onFilterChange={this.handleFilterChange} />
+                        <VocabTable data={this.state.data} filterText={this.state.filterText} onWordSubmit={this.handleWordSubmit} onWordDelete={this.handleWordDelete} />
                     </div>
                 </div>
             </main>
@@ -70,9 +102,59 @@ var NavBar = React.createClass({
         return (
             <nav className="ui fixed menu inverted navbar">
                 <a href="#" className="brand item">Vocabulary List</a>
-                <a href="#" className="item active">Home</a>
-                <a href="#" className="item">Dictionaries</a>
+                <a href="index.html" className="item active">Home</a>
+                <a href="dictionaries.html" className="item">Dictionaries</a>
             </nav>
+        );
+    }
+});
+
+var DictionarySelector = React.createClass({
+    setDictionaryList: function() {
+        var self = this;
+        var dictionaryNodes = [];
+        var valueCounter = 0;
+        $.each(self.props.data, function (index, obj) {
+            dictionaryNodes.push(
+                <option value={valueCounter} id={obj.id}>{obj.name}</option>
+            );
+            ++valueCounter;
+        });
+        return dictionaryNodes;
+    },
+    getInitialState: function() {
+        return {value: ""};
+    },
+    handleChange: function(e) {
+        this.setState({value: e.target.value});
+        console.log('DROPDOWN CHANGED');
+        return;
+    },
+    render: function() {
+        return (
+            <div className="ui form" style={{marginTop:'60px'}}>
+                <div className="field">
+                    <select className="ui dropdown" onChange={this.handleChange} value={this.state.value}>
+                        {this.setDictionaryList()}
+                    </select>
+                </div>
+            </div>
+        );
+    }
+});
+
+var SearchBar = React.createClass({
+    handleChange: function() {
+        this.props.onFilterChange(React.findDOMNode(this.refs.filterText).value);
+    },
+    render: function() {
+        return (
+            <div className="ui search" style={{marginTop:'25px'}}>
+                <div className="ui icon input">
+                    <input className="prompt" type="text" placeholder="Search..." value={this.props.filterText} ref="filterText" onChange={this.handleChange} />
+                    <i className="search icon"></i>
+                </div>
+            </div>
         );
     }
 });
@@ -82,9 +164,12 @@ var VocabTable = React.createClass({
         var self = this;
         var wordNodes = [];
         $.each(self.props.data, function (index, obj) {
-            wordNodes.push(
-                <Word id={obj.id} word={obj.word} definition={obj.definition} onWordDelete={self.handleWordDelete} />
-            );
+            // Check for filterText
+            if (obj.word.toLowerCase().indexOf(self.props.filterText.toLowerCase()) !== -1 || obj.definition.toLowerCase().indexOf(self.props.filterText.toLowerCase()) !== -1) {
+                wordNodes.push(
+                    <Word id={obj.id} word={obj.word} definition={obj.definition} onWordDelete={self.handleWordDelete} />
+                );
+            }
         });
         return wordNodes;
     },
@@ -96,8 +181,8 @@ var VocabTable = React.createClass({
     },
     render: function() {
         return (
-            <div className="vocabTable container">
-                <table className="ui table" style={{marginTop:'90px'}}>
+            <div className="vocabTable container" style={{marginTop:'25px'}}>
+                <table className="ui table">
                     <thead>
                         <tr>
                             <th>Word</th>
@@ -147,7 +232,7 @@ var Word = React.createClass({
     },
     render: function() {
         return (
-            <tr id={this.props.id}>
+            <tr key={this.props.id}>
                 <td>
                     {this.props.word}
                 </td>
@@ -205,11 +290,6 @@ var WordForm = React.createClass({
         );
     }
 });
-
-var data = [
-    {word: "hello", definition: "world"},
-    {word: "credential", definition: "helper"}
-]
 
 React.render(
     <Content url="php/dataManager.php" pollInterval={1000} />,
