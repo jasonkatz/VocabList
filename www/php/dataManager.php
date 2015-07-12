@@ -12,72 +12,93 @@
     } 
 
     function loadDictionaries($data) {
-        $dataDecoded = json_decode($data, true);
+        $dataDecoded = json_decode($data);
+        $results = array();
+        foreach ($dataDecoded as $obj) {
+            $newObj = array(
+                "id" => $obj->dictionaryId,
+                "name" => $obj->name 
+            );
+            array_push($results, array("id" => $obj->dictionaryId, "name" => $obj->name));
+        }
         header('HTTP/1.1 200 OK');
         header('Content-Type: application/json');
         header('Cache-Control: no-cache');
-        $results = array();
-        foreach ($dataDecoded as $index => $obj) {
-            foreach ($obj as $objKey => $objVal) {
-                if ($objKey == 'dictionaryId') {
-                    $id = $objVal;
-                } elseif ($objKey == 'name') {
-                    $name = $objVal;
-                }
-            }
-            $newObj = array(
-                "id" => $id,
-                "name" => $name
-            );
-            array_push($results, $newObj);
-        }
         echo json_encode($results, JSON_PRETTY_PRINT);
     }
 
     function loadWords($data) {
-        $dataDecoded = json_decode($data, true);
-        header('HTTP/1.1 200 OK');
-        header('Content-Type: application/json');
-        header('Cache-Control: no-cache');
-        foreach ($dataDecoded as $index => $obj) {
-            $correctObject = false;
-            foreach ($obj as $objKey => $objVal) {
-                if ($objKey == 'dictionaryId' && $objVal == $_POST['currentDictionaryId']) {
-                    $correctObject = true;
-                } elseif ($objKey == 'words' && $correctObject) {
-                    echo json_encode($objVal, JSON_PRETTY_PRINT);
-                }
+        $dataDecoded = json_decode($data);
+        $dictionaryFound = false;
+        foreach ($dataDecoded as $obj) {
+            if ($obj->dictionaryId == $_POST['currentDictionaryId']) {
+                $dictionaryFound = true;
+                header('HTTP/1.1 200 OK');
+                header('Content-Type: appliction/json');
+                header('Cache-Control: no-cache');
+                echo json_encode($obj->words, JSON_PRETTY_PRINT);
+                return;
             }
+        }
+        if (!$dictionaryFound) {
+            $error = json_encode(array(
+                'errorMessage' => 'Error loading words: dictionary id ' . $_POST['currentDictionaryId'] . ' not found'
+            ));
+            //error_log($error);
+            header('HTTP/1.1 500 Internal Server Error');
+            header('Content-Type: application/json');
+            header('Cache-Control: no-cache');
+            echo $error;
+            return;
         }
     }
 
     function addWord($data) {
-        $dataDecoded = json_decode($data, true);
-        $dataDecoded[] = ['id'         => getNewId(),
-                          'word'       => $_POST['word'],
-                          'definition' => $_POST['definition']];
-        $data = json_encode($dataDecoded, JSON_PRETTY_PRINT);
-        file_put_contents('../data/data.json', $data);
-        header('HTTP/1.1 200 OK');
-        header('Content-Type: application/json');
-        header('Cache-Control: no-cache');
-        echo $data;
+        $dataDecoded = json_decode($data);
+        $dictionaryFound = false;
+        foreach ($dataDecoded as $index => $obj) {
+            if ($obj->dictionaryId == $_POST['currentDictionaryId']) {
+                $dictionaryFound = true;
+                array_push($dataDecoded[$index]->words, ['id'            => getNewId(),
+                                                         'word'          => $_POST['word'],
+                                                         'definition'    => $_POST['definition']]);
+                file_put_contents('../data/data.json', json_encode($dataDecoded, JSON_PRETTY_PRINT));
+                header('HTTP:/1.1 200 OK');
+                header('Content-Type: appliction/json');
+                header('Cache-Control: no-cache');
+                echo json_encode($obj->words, JSON_PRETTY_PRINT);
+                return;
+            }
+        }
+        if (!$dictionaryFound) {
+            $error = json_encode(array(
+                'errorMessage' => 'Error adding word: dictionary id ' . $_POST['currentDictionaryId'] . ' not found'
+            ));
+            error_log($error);
+            header('HTTP/1.1 500 Internal Server Error');
+            header('Content-Type: application/json');
+            header('Cache-Control: no-cache');
+            echo $error;
+            return;
+        }
     }
 
     function deleteWord($data) {
-        $dataDecoded = json_decode($data, true);
+        $dataDecoded = json_decode($data);
         $deleting = null;
-        foreach ($dataDecoded as $index => $obj) {
-            foreach ($obj as $objKey => $objVal) {
-                if ($objKey == 'id' && $objVal == $_POST['id']) {
-                    $deleting = $obj;
-                    unset($dataDecoded[$index]);
+        foreach ($dataDecoded as $dictionaryIndex => $obj) {
+            if ($obj->dictionaryId == $_POST['currentDictionaryId']) {
+                foreach ($obj->words as $wordIndex => $word) {
+                    if ($word->id == $_POST['id']) {
+                        $deleting = $word;
+                        unset($dataDecoded[$dictionaryIndex]->words[$wordIndex]);
+                    }
                 }
             }
         }
         if ($deleting == null) {
             $error = json_encode(array(
-                'errorMessage' => 'Error deleting: id not found'
+                'errorMessage' => 'Error deleting: id ' . $_POST['id'] . ' not found'
             ));
             error_log($error);
             header('HTTP/1.1 500 Internal Server Error');
@@ -91,7 +112,12 @@
         header('HTTP/1.1 200 OK');
         header('Content-Type: application/json');
         header('Cache-Control: no-cache');
-        echo $data;
+        foreach ($dataDecoded as $obj) {
+            if ($obj->dictionaryId == $_POST['currentDictionaryId']) {
+                echo json_encode($obj->words);
+                return;
+            }
+        }
     }
 
     function getNewId() {

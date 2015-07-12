@@ -12,7 +12,7 @@ var Content = React.createClass({
                 if (this.state.currentDictionaryId == '' && this.state.dictionaries[0]) {
                     this.state.currentDictionaryId = this.state.dictionaries[0].id;
                     this.loadWordsFromServer();
-                    console.log('Initial dictionary set to ' + this.state.currentDictionaryId);
+                    console.log('Initial dictionary set to', this.state.currentDictionaryId);
                 }
             }.bind(this),
             error: function(xhr, status, err) {
@@ -41,12 +41,14 @@ var Content = React.createClass({
         }
     },
     handleWordSubmit: function(word) {
-        console.log("Adding word: " + JSON.stringify(word));
+        console.log("Adding word:", word);
         $.ajax({
             url: this.props.url + "?type=addWord",
             dataType: 'json',
             type: 'POST',
-            data: word,
+            data: { word: word.word,
+                    definition: word.definition,
+                    currentDictionaryId: this.state.currentDictionaryId },
             success: function (data) {
                 this.setState({data: data});
             }.bind(this),
@@ -56,12 +58,12 @@ var Content = React.createClass({
         });
     },
     handleWordDelete: function(id) {
-        console.log("Deleting word: " + JSON.stringify(id));
+        console.log("Deleting word:", id);
         $.ajax({
             url: this.props.url + "?type=deleteWord",
             dataType: 'json',
             type: 'POST',
-            data: id,
+            data: {currentDictionaryId: this.state.currentDictionaryId, id: id.id},
             success: function (data) {
                 this.setState({data: data});
             }.bind(this),
@@ -71,7 +73,7 @@ var Content = React.createClass({
         });
     },
     handleDictionaryChange: function(id) {
-        console.log("Changing dictionary to " + JSON.stringify(id));
+        console.log("Changing dictionary to", id);
         this.state.currentDictionaryId = id;
         this.loadWordsFromServer();
     },
