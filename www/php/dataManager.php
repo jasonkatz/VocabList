@@ -35,10 +35,20 @@
     }
 
     function loadWords($data) {
+        $dataDecoded = json_decode($data, true);
         header('HTTP/1.1 200 OK');
         header('Content-Type: application/json');
         header('Cache-Control: no-cache');
-        echo $data;
+        foreach ($dataDecoded as $index => $obj) {
+            $correctObject = false;
+            foreach ($obj as $objKey => $objVal) {
+                if ($objKey == 'dictionaryId' && $objVal == $_POST['currentDictionaryId']) {
+                    $correctObject = true;
+                } elseif ($objKey == 'words' && $correctObject) {
+                    echo json_encode($objVal, JSON_PRETTY_PRINT);
+                }
+            }
+        }
     }
 
     function addWord($data) {

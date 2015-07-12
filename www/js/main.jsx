@@ -8,6 +8,12 @@ var Content = React.createClass({
                 this.setState({
                     dictionaries: data,
                 });
+                // If no dictionary selected, select the first one
+                if (this.state.currentDictionaryId == '' && this.state.dictionaries[0]) {
+                    this.state.currentDictionaryId = this.state.dictionaries[0].id;
+                    this.loadWordsFromServer();
+                    console.log('Initial dictionary set to ' + this.state.currentDictionaryId);
+                }
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error(this.props.url, status, err.toString());
@@ -15,20 +21,24 @@ var Content = React.createClass({
         });
     },
     loadWordsFromServer: function() {
-        $.ajax({
-            url: this.props.url + "?type=getWords",
-            dataType: 'json',
-            cache: false,
-            success: function(data) {
-                this.setState({
-                    data: data,
-                    filterText: this.state.filterText
-                });
-            }.bind(this),
-            error: function(xhr, status, err) {
-                console.error(this.props.url, status, err.toString());
-            }.bind(this)
-        });
+        if (this.state.currentDictionaryId) {
+            $.ajax({
+                url: this.props.url + "?type=getWords",
+                dataType: 'json',
+                cache: false,
+                type: 'POST', 
+                data: { currentDictionaryId: this.state.currentDictionaryId },
+                success: function(data) {
+                    this.setState({
+                        data: data,
+                        filterText: this.state.filterText
+                    });
+                }.bind(this),
+                error: function(xhr, status, err) {
+                    console.error(this.props.url, status, err.toString());
+                }.bind(this)
+            });
+        }
     },
     handleWordSubmit: function(word) {
         console.log("Adding word: " + JSON.stringify(word));
@@ -62,6 +72,8 @@ var Content = React.createClass({
     },
     handleDictionaryChange: function(id) {
         console.log("Changing dictionary to " + JSON.stringify(id));
+        this.state.currentDictionaryId = id;
+        this.loadWordsFromServer();
     },
     getInitialState: function() {
         return { 
@@ -77,8 +89,8 @@ var Content = React.createClass({
     componentDidMount: function() {
         this.loadDictionariesFromServer();
         setInterval(this.loadDictionariesFromServer, this.props.pollInterval);
-        //this.loadWordsFromServer();
-        //setInterval(this.loadWordsFromServer, this.props.pollInterval);
+        this.loadWordsFromServer();
+        setInterval(this.loadWordsFromServer, this.props.pollInterval);
         //$('.ui.dropdown').dropdown();
     },
     render: function() {
@@ -127,7 +139,7 @@ var DictionarySelector = React.createClass({
     },
     handleChange: function(e) {
         this.setState({value: e.target.value});
-        console.log('DROPDOWN CHANGED');
+        this.props.onDictionaryChange($(e.target).find('option:selected').attr('id'));
         return;
     },
     render: function() {
