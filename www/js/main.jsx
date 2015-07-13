@@ -266,7 +266,9 @@ var Word = React.createClass({
 
 var WordForm = React.createClass({
     handleSubmit: function(e) {
-        e.preventDefault();
+        if (e) {
+            e.preventDefault();
+        }
         var word = React.findDOMNode(this.refs.word).value.trim();
         var definition = React.findDOMNode(this.refs.definition).value.trim();
         if (!word || !definition) {
@@ -274,6 +276,7 @@ var WordForm = React.createClass({
         }
         this.props.onWordSubmit({word: word, definition: definition});
         this.handleClear();
+        React.findDOMNode(this.refs.word).focus();
         return;
     },
     handleClear: function() {
@@ -281,6 +284,17 @@ var WordForm = React.createClass({
         var definition = React.findDOMNode(this.refs.definition).value = '';
         return;
     }, 
+    componentDidMount: function() {
+        var self = this;
+        $('input').keypress(function(e) {
+            if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
+                self.handleSubmit();
+                return false;
+            } else {
+                return true;
+            }
+        });
+    },
     render: function() {
         return (
             <form className="wordForm">

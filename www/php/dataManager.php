@@ -92,6 +92,7 @@
                     if ($word->id == $_POST['id']) {
                         $deleting = $word;
                         unset($dataDecoded[$dictionaryIndex]->words[$wordIndex]);
+                        $dataDecoded[$dictionaryIndex]->words = array_values($dataDecoded[$dictionaryIndex]->words);
                     }
                 }
             }
