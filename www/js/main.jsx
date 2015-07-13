@@ -1,7 +1,7 @@
 var Content = React.createClass({
     loadDictionariesFromServer: function() {
         $.ajax({
-            url: this.props.url + "?type=getDictionaries",
+            url: this.props.url + '?type=getDictionaries',
             dataType: 'json',
             cache: false,
             success: function(data) {
@@ -23,7 +23,7 @@ var Content = React.createClass({
     loadWordsFromServer: function() {
         if (this.state.currentDictionaryId) {
             $.ajax({
-                url: this.props.url + "?type=getWords",
+                url: this.props.url + '?type=getWords',
                 dataType: 'json',
                 cache: false,
                 type: 'POST', 
@@ -41,9 +41,9 @@ var Content = React.createClass({
         }
     },
     handleWordSubmit: function(word) {
-        console.log("Adding word:", word);
+        console.log('Adding word:', word);
         $.ajax({
-            url: this.props.url + "?type=addWord",
+            url: this.props.url + '?type=addWord',
             dataType: 'json',
             type: 'POST',
             data: { word: word.word,
@@ -58,9 +58,9 @@ var Content = React.createClass({
         });
     },
     handleWordDelete: function(id) {
-        console.log("Deleting word:", id);
+        console.log('Deleting word:', id);
         $.ajax({
-            url: this.props.url + "?type=deleteWord",
+            url: this.props.url + '?type=deleteWord',
             dataType: 'json',
             type: 'POST',
             data: {currentDictionaryId: this.state.currentDictionaryId, id: id.id},
@@ -72,8 +72,11 @@ var Content = React.createClass({
             }.bind(this)
         });
     },
+    handleWordEdit: function(data) {
+        console.log('Editing word:', data);
+    },
     handleDictionaryChange: function(id) {
-        console.log("Changing dictionary to", id);
+        console.log('Changing dictionary to', id);
         this.state.currentDictionaryId = id;
         this.loadWordsFromServer();
     },
@@ -103,7 +106,7 @@ var Content = React.createClass({
                         <NavBar />
                         <DictionarySelector data={this.state.dictionaries} onDictionaryChange={this.handleDictionaryChange} />
                         <SearchBar filterText={this.state.filterText} onFilterChange={this.handleFilterChange} />
-                        <VocabTable data={this.state.data} filterText={this.state.filterText} onWordSubmit={this.handleWordSubmit} onWordDelete={this.handleWordDelete} />
+                        <VocabTable data={this.state.data} filterText={this.state.filterText} onWordSubmit={this.handleWordSubmit} onWordDelete={this.handleWordDelete} onWordEdit={this.handleWordEdit} />
                     </div>
                 </div>
             </main>
@@ -181,7 +184,7 @@ var VocabTable = React.createClass({
             // Check for filterText
             if (obj.word.toLowerCase().indexOf(self.props.filterText.toLowerCase()) !== -1 || obj.definition.toLowerCase().indexOf(self.props.filterText.toLowerCase()) !== -1) {
                 wordNodes.push(
-                    <Word id={obj.id} word={obj.word} definition={obj.definition} onWordDelete={self.handleWordDelete} />
+                    <Word id={obj.id} word={obj.word} definition={obj.definition} onWordDelete={self.handleWordDelete} onWordEdit={self.handleWordEdit} />
                 );
             }
         });
@@ -192,6 +195,9 @@ var VocabTable = React.createClass({
     },
     handleWordDelete: function(id) {
         this.props.onWordDelete(id);
+    },
+    handleWordEdit: function(data) {
+        this.props.onWordEdit(data);
     },
     render: function() {
         return (
@@ -217,46 +223,64 @@ var VocabTable = React.createClass({
 });
 
 var Word = React.createClass({
+    toggleEditMode() {
+        this.state.editMode = !this.state.editMode;
+        this.forceUpdate();
+    },
     handleDelete: function(e) {
         e.preventDefault();
         this.props.onWordDelete({id: this.props.id});
         return;
     },
-    handleEdit: function(e) {
+    handleEditStart: function(e) {
         e.preventDefault();
-        // Grab buttons
-        var editButton = $('#' + this.props.id).find('#editButton');
-        var deleteButton = $('#' + this.props.id).find('#deleteButton');
-        // Change styling
-        editButton.removeClass('blue').addClass('positive');
-        deleteButton.removeClass('negative').addClass('yellow');
-        // Change text
-        editButton.text('Done');
-        deleteButton.text('Cancel');
-        // Change event handlers
-        editButton.attr('onClick', this.handleEditSubmit);
-        deleteButton.attr('onClick', this.handleEditCancel);
-        return;
+        this.toggleEditMode();
+    },
+    handleWordChange: function(e) {
+        this.setState({wordEdit: e.target.value});
+    },
+    handleDefinitionChange: function(e) {
+        this.setState({definitionEdit: e.target.value});
     },
     handleEditSubmit: function(e) {
-        console.log('submitted edit');
+        e.preventDefault();
+        this.props.onWordEdit({id:          this.props.id,
+                               word:        this.state.wordEdit,
+                               definition:  this.state.definitionEdit});
+        this.toggleEditMode();
     },
     handleEditCancel: function(e) {
-        console.log('cancelled edit');
+        e.preventDefault();
+        this.toggleEditMode();
+    },
+    getInitialState: function() {
+        return {editMode:       false,
+                wordEdit:       this.props.word,
+                definitionEdit: this.props.definition};
     },
     render: function() {
+        var wordData = this.state.editMode ?
+            (<div className="ui fluid input focus">
+                <input type="text" ref="word" style={{width:'100%'}} value={this.state.wordEdit} onChange={this.handleWordChange} />
+            </div>) : this.props.word;
+        var definitionData = this.state.editMode ?
+            (<div className="ui fluid input focus">
+                <input type="text" ref="definition" style={{width:'100%'}} value={this.state.definitionEdit} onChange={this.handleDefinitionChange} />
+            </div>) : this.props.definition;
+        var buttonClasses1 = this.state.editMode ? 'ui positive basic button' : 'ui blue basic button';
+        var buttonClasses2 = this.state.editMode ? 'ui yellow basic button' : 'ui negative basic button';
         return (
-            <tr key={this.props.id}>
+            <tr id={this.props.id}>
                 <td>
-                    {this.props.word}
+                    {wordData}
                 </td>
                 <td>
-                    {this.props.definition}
+                    {definitionData}
                 </td>
                 <td>
                     <div className="ui buttons">
-                        <div className="ui blue basic button" id="editButton" onClick={this.handleEdit}>Edit</div>
-                        <div className="negative ui basic button" id="deleteButton" onClick={this.handleDelete}>Delete</div>
+                        <div className={buttonClasses1} onClick={this.state.editMode ? this.handleEditSubmit : this.handleEditStart}>{this.state.editMode ? 'Done' : 'Edit'}</div>
+                        <div className={buttonClasses2} onClick={this.state.editMode ? this.handleEditCancel : this.handleDelete}>{this.state.editMode ? 'Cancel' : 'Delete'}</div>
                     </div>
                 </td>
             </tr>
