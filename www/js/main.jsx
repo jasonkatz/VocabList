@@ -240,6 +240,9 @@ var VocabTable = React.createClass({
 var Word = React.createClass({
     toggleEditMode() {
         this.state.editMode = !this.state.editMode;
+        if (!this.state.editMode) {
+            this.state.editEnterEventBound = false;
+        }
         this.forceUpdate();
     },
     handleDelete: function(e) {
@@ -258,7 +261,9 @@ var Word = React.createClass({
         this.setState({definitionEdit: e.target.value});
     },
     handleEditSubmit: function(e) {
-        e.preventDefault();
+        if (e) {
+            e.preventDefault();
+        }
         this.props.onWordEdit({id:          this.props.id,
                                word:        this.state.wordEdit,
                                definition:  this.state.definitionEdit});
@@ -271,18 +276,37 @@ var Word = React.createClass({
         this.toggleEditMode();
     },
     getInitialState: function() {
-        return {editMode:       false,
-                wordEdit:       this.props.word,
-                definitionEdit: this.props.definition};
+        return {editMode:               false,
+                editEnterEventBound:    false,
+                wordEdit:               this.props.word,
+                definitionEdit:         this.props.definition};
+    },
+    componentDidUpdate: function() {
+        // If editing and enter event hasn't been bound yet
+        if (this.state.editMode && !this.state.editEnterEventBound) {
+            var self = this;
+            // Submit on enter key
+            $('.input--edit').keypress(function(e) {
+                if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
+                    self.handleEditSubmit(e);
+                    return false;
+                } else {
+                    return true;
+                }
+            });
+            this.state.editEnterEventBound = true;
+            // Highlight word input
+            React.findDOMNode(this.refs.word).select();
+        }
     },
     render: function() {
         var wordData = this.state.editMode ?
             (<div className="ui fluid input focus">
-                <input type="text" ref="word" style={{width:'100%'}} value={this.state.wordEdit} onChange={this.handleWordChange} />
+                <input className="input--edit" type="text" ref="word" style={{width:'100%'}} value={this.state.wordEdit} onChange={this.handleWordChange} />
             </div>) : this.props.word;
         var definitionData = this.state.editMode ?
             (<div className="ui fluid input focus">
-                <input type="text" ref="definition" style={{width:'100%'}} value={this.state.definitionEdit} onChange={this.handleDefinitionChange} />
+                <input className="input--edit" type="text" ref="definition" style={{width:'100%'}} value={this.state.definitionEdit} onChange={this.handleDefinitionChange} />
             </div>) : this.props.definition;
         var buttonClasses1 = this.state.editMode ? 'ui positive basic button' : 'ui blue basic button';
         var buttonClasses2 = this.state.editMode ? 'ui yellow basic button' : 'ui negative basic button';
@@ -327,7 +351,8 @@ var WordForm = React.createClass({
     }, 
     componentDidMount: function() {
         var self = this;
-        $('input').keypress(function(e) {
+        // Submit on enter key
+        $('.input--submit').keypress(function(e) {
             if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
                 self.handleSubmit();
                 return false;
@@ -341,12 +366,12 @@ var WordForm = React.createClass({
             <form className="wordForm">
                 <td>
                     <div className="ui fluid input focus">
-                        <input type="text" ref="word" style={{width:'100%'}} placeholder="New Word" />
+                        <input className="input--submit" type="text" ref="word" style={{width:'100%'}} placeholder="New Word" />
                     </div>
                 </td>
                 <td>
                     <div className="ui fluid input focus">
-                        <input type="text" ref="definition" style={{width:'100%'}} placeholder="New Definition" />
+                        <input className="input--submit" type="text" ref="definition" style={{width:'100%'}} placeholder="New Definition" />
                     </div>
                 </td>
                 <td>
