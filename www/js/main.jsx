@@ -72,8 +72,23 @@ var Content = React.createClass({
             }.bind(this)
         });
     },
-    handleWordEdit: function(data) {
-        console.log('Editing word:', data);
+    handleWordEdit: function(word) {
+        console.log('Editing word:', word);
+        $.ajax({
+            url: this.props.url + '?type=editWord',
+            dataType: 'json',
+            type: 'POST',
+            data: {id: word.id,
+                   word: word.word,
+                   definition: word.definition,
+                   currentDictionaryId: this.state.currentDictionaryId },
+            success: function (data) {
+                this.setState({data: data});
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error(this.props.url, status, err.toString());
+            }.bind(this)
+        });
     },
     handleDictionaryChange: function(id) {
         console.log('Changing dictionary to', id);
@@ -81,7 +96,7 @@ var Content = React.createClass({
         this.loadWordsFromServer();
     },
     getInitialState: function() {
-        return { 
+        return {
             data: [],
             dictionaries: [],
             currentDictionaryId: '',
@@ -251,6 +266,8 @@ var Word = React.createClass({
     },
     handleEditCancel: function(e) {
         e.preventDefault();
+        this.state.wordEdit = this.props.word;
+        this.state.definitionEdit = this.props.definition;
         this.toggleEditMode();
     },
     getInitialState: function() {

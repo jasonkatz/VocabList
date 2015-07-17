@@ -9,7 +9,9 @@
         addWord($data);
     } elseif ($requestType == 'deleteWord') {
         deleteWord($data);
-    } 
+    } elseif ($requestType == 'editWord') {
+        editWord($data);
+    }
 
     function loadDictionaries($data) {
         $dataDecoded = json_decode($data);
@@ -17,7 +19,7 @@
         foreach ($dataDecoded as $obj) {
             $newObj = array(
                 "id" => $obj->dictionaryId,
-                "name" => $obj->name 
+                "name" => $obj->name
             );
             array_push($results, array("id" => $obj->dictionaryId, "name" => $obj->name));
         }
@@ -118,6 +120,40 @@
                 echo json_encode($obj->words);
                 return;
             }
+        }
+    }
+
+    function editWord($data) {
+        $dataDecoded = json_decode($data);
+        $dictionaryFound = false;
+        foreach ($dataDecoded as $dictionaryIndex => $obj) {
+            if ($obj->dictionaryId == $_POST['currentDictionaryId']) {
+                $dictionaryFound = true;
+                foreach ($obj->words as $wordIndex => $word) {
+                    if ($word->id == $_POST['id']) {
+                        $dataDecoded[$dictionaryIndex]->words[$wordIndex] = ['id'           => $_POST['id'],
+                                                                             'word'         => $_POST['word'],
+                                                                             'definition'   => $_POST['definition']];
+                        file_put_contents('../data/data.json', json_encode($dataDecoded, JSON_PRETTY_PRINT));
+                        header('HTTP:/1.1 200 OK');
+                        header('Content-Type: appliction/json');
+                        header('Cache-Control: no-cache');
+                        echo json_encode($obj->words, JSON_PRETTY_PRINT);
+                        return;
+                    }
+                }
+            }
+        }
+        if (!$dictionaryFound) {
+            $error = json_encode(array(
+                'errorMessage' => 'Error adding word: dictionary id ' . $_POST['currentDictionaryId'] . ' not found'
+            ));
+            error_log($error);
+            header('HTTP/1.1 500 Internal Server Error');
+            header('Content-Type: application/json');
+            header('Cache-Control: no-cache');
+            echo $error;
+            return;
         }
     }
 
