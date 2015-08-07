@@ -48,11 +48,11 @@ var Content = React.createClass({
     handleDictionaryEdit: function(dictionary) {
         console.log('Editing dictionary:', dictionary);
         $.ajax({
-            url: this.props.url + '?type=editWord',
+            url: this.props.url + '?type=editDictionary',
             dataType: 'json',
             type: 'POST',
             data: {id: dictionary.id,
-                   name: dictionary.name },
+                   name: dictionary.dictionary },
             success: function (data) {
                 this.setState({data: data});
             }.bind(this),

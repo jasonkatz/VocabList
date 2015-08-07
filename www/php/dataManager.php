@@ -13,6 +13,10 @@
         editWord($data);
     } elseif ($requestType == 'addDictionary') {
         addDictionary($data);
+    } elseif ($requestType == 'deleteDictionary') {
+        deleteDictionary($data);
+    } elseif ($requestType == 'editDictionary') {
+        editDictionary($data);
     }
 
     function loadDictionaries($data) {
@@ -167,24 +171,21 @@
         $data = json_encode($dataDecoded, JSON_PRETTY_PRINT);
         file_put_contents('../data/data.json', $data);
         echo loadDictionaries($data);
+    }
 
-        /*foreach ($dataDecoded as $index => $obj) {
-            if ($obj->dictionaryId == $_POST['currentDictionaryId']) {
-                $dictionaryFound = true;
-                array_push($dataDecoded[$index]->words, ['id'            => getNewId(),
-                                                         'word'          => $_POST['word'],
-                                                         'definition'    => $_POST['definition']]);
-                file_put_contents('../data/data.json', json_encode($dataDecoded, JSON_PRETTY_PRINT));
-                header('HTTP:/1.1 200 OK');
-                header('Content-Type: appliction/json');
-                header('Cache-Control: no-cache');
-                echo json_encode($obj->words, JSON_PRETTY_PRINT);
-                return;
+    function deleteDictionary($data) {
+        $dataDecoded = json_decode($data);
+        $deleting = null;
+        foreach ($dataDecoded as $dictionaryIndex => $obj) {
+            if ($obj->dictionaryId == $_POST['id']) {
+                $deleting = $obj;
+                unset($dataDecoded[$dictionaryIndex]);
+                $dataDecoded = array_values($dataDecoded);
             }
         }
-        if (!$dictionaryFound) {
+        if ($deleting == null) {
             $error = json_encode(array(
-                'errorMessage' => 'Error adding word: dictionary id ' . $_POST['currentDictionaryId'] . ' not found'
+                'errorMessage' => 'Error deleting: id ' . $_POST['id'] . ' not found'
             ));
             error_log($error);
             header('HTTP/1.1 500 Internal Server Error');
@@ -192,7 +193,35 @@
             header('Cache-Control: no-cache');
             echo $error;
             return;
-        }*/
+        }
+        $data = json_encode($dataDecoded, JSON_PRETTY_PRINT);
+        file_put_contents('../data/data.json', $data);
+        echo loadDictionaries($data);
+    }
+
+    function editDictionary($data) {
+        $dataDecoded = json_decode($data);
+        $dictionaryFound = false;
+        foreach ($dataDecoded as $dictionaryIndex => $obj) {
+            if ($obj->dictionaryId == $_POST['id']) {
+                $dictionaryFound = true;
+                $dataDecoded[$dictionaryIndex]->name = $_POST['name'];
+                $data = json_encode($dataDecoded, JSON_PRETTY_PRINT);
+                file_put_contents('../data/data.json', $data);
+                echo loadDictionaries($data);
+            }
+        }
+        if (!$dictionaryFound) {
+            $error = json_encode(array(
+                'errorMessage' => 'Error adding word: dictionary id ' . $_POST['id'] . ' not found'
+            ));
+            error_log($error);
+            header('HTTP/1.1 500 Internal Server Error');
+            header('Content-Type: application/json');
+            header('Cache-Control: no-cache');
+            echo $error;
+            return;
+        }
     }
 
     function getNewId() {
