@@ -237,7 +237,7 @@ var VocabTable = React.createClass({
     }
 });
 
-var externalEditEvent;
+var externalFocusEvent;
 var Word = React.createClass({
     toggleEditMode() {
         this.state.editMode = !this.state.editMode;
@@ -255,14 +255,14 @@ var Word = React.createClass({
         e.preventDefault();
 
         // Close any other active word edits
-        if (externalEditEvent) {
-            window.dispatchEvent(externalEditEvent);
+        if (externalFocusEvent) {
+            window.dispatchEvent(externalFocusEvent);
         }
 
         this.toggleEditMode();
     },
-    handleExternalEdit: function(e) {
-        if (this.props.id != e.excepted_id && this.state.editMode) {
+    handleExternalFocus: function(e) {
+        if (this.state.editMode) {
             this.state.wordEdit = this.props.word;
             this.state.definitionEdit = this.props.definition;
             this.toggleEditMode();
@@ -296,8 +296,8 @@ var Word = React.createClass({
                 definitionEdit:         this.props.definition};
     },
     componentDidMount: function() {
-        externalEditEvent = new Event('externalEdit', { 'detail': this.props.id });
-        window.addEventListener('externalEdit', this.handleExternalEdit);
+        externalFocusEvent = new Event('externalFocus');
+        window.addEventListener('externalFocus', this.handleExternalFocus);
     },
     componentDidUpdate: function() {
         // If editing and enter event hasn't been bound yet
@@ -318,8 +318,8 @@ var Word = React.createClass({
         }
     },
     componentWillUnmount: function() {
-        if (externalEditEvent) {
-            window.removeEventListener('externalEdit', this.handleExternalEdit);
+        if (externalFocusEvent) {
+            window.removeEventListener('externalFocus', this.handleExternalFocus);
         }
     },
     render: function() {

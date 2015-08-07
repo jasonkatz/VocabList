@@ -165,6 +165,7 @@ var DictionaryTable = React.createClass({
     }
 });
 
+var externalFocusEvent;
 var Dictionary = React.createClass({
     toggleEditMode() {
         this.state.editMode = !this.state.editMode;
@@ -175,23 +176,34 @@ var Dictionary = React.createClass({
     },
     handleDelete: function(e) {
         e.preventDefault();
-        this.props.onDictionaryDelete({id: this.props.id});
+
+        // Close any other active focuses
+        if (externalFocusEvent) {
+            window.dispatchEvent(externalFocusEvent);
+        }
+
+        this.state.confirmDelete = true;
+        this.forceUpdate();
         return;
     },
     handleEditStart: function(e) {
         e.preventDefault();
 
-        // Close any other active word edits
-        if (externalEditEvent) {
-            window.dispatchEvent(externalEditEvent);
+        // Close any other active focuses
+        if (externalFocusEvent) {
+            window.dispatchEvent(externalFocusEvent);
         }
 
         this.toggleEditMode();
     },
-    handleExternalEdit: function(e) {
-        if (this.props.id != e.excepted_id && this.state.editMode) {
+    handleExternalFocus: function(e) {
+        if (this.state.editMode) {
             this.state.dictionaryEdit = this.props.dictionary;
             this.toggleEditMode();
+        }
+        if (this.state.confirmDelete) {
+            this.state.confirmDelete = false;
+            this.forceUpdate();
         }
     },
     handleDictionaryChange: function(e) {
@@ -210,14 +222,25 @@ var Dictionary = React.createClass({
         this.state.dictionaryEdit = this.props.dictionary;
         this.toggleEditMode();
     },
+    handleConfirmDelete: function(e) {
+        e.preventDefault();
+        this.props.onDictionaryDelete({id: this.props.id});
+        this.state.confirmDelete = false;
+    },
+    handleCancelDelete: function(e) {
+        e.preventDefault();
+        this.state.confirmDelete = false;
+        this.forceUpdate();
+    },
     getInitialState: function() {
         return {editMode:                    false,
                 editEnterEventBound:         false,
+                confirmDelete:               false,
                 dictionaryEdit:              this.props.dictionary};
     },
     componentDidMount: function() {
-        externalEditEvent = new Event('externalEdit', { 'detail': this.props.id });
-        window.addEventListener('externalEdit', this.handleExternalEdit);
+        externalFocusEvent = new Event('externalFocus');
+        window.addEventListener('externalFocus', this.handleExternalFocus);
     },
     componentDidUpdate: function() {
         // If editing and enter event hasn't been bound yet
@@ -238,17 +261,45 @@ var Dictionary = React.createClass({
         }
     },
     componentWillUnmount: function() {
-        if (externalEditEvent) {
-            window.removeEventListener('externalEdit', this.handleExternalEdit);
+        if (externalFocusEvent) {
+            window.removeEventListener('externalFocus', this.handleExternalFocus);
         }
     },
     render: function() {
-        var dictionaryData = this.state.editMode ?
-            (<div className="ui fluid input focus">
-                <input className="input--edit" type="text" ref="dictionary" style={{width:'100%'}} value={this.state.dictionaryEdit} onChange={this.handleDictionaryChange} />
-            </div>) : this.props.dictionary;
-        var buttonClasses1 = this.state.editMode ? 'ui positive basic button' : 'ui blue basic button';
-        var buttonClasses2 = this.state.editMode ? 'ui yellow basic button' : 'ui negative basic button';
+        var dictionaryData = this.props.dictionary;
+        var buttonClasses1 = 'ui blue basic button';
+        var buttonClasses2 = 'ui negative basic button';
+        var buttonHandler1 = this.handleEditStart;
+        var buttonHandler2 = this.handleDelete;
+        var buttonContent1 = 'Edit';
+        var buttonContent2 = 'Delete';
+
+        if (this.state.editMode) {
+            dictionaryData = (<div className="ui fluid input focus">
+                                  <input className="input--edit" type="text" ref="dictionary" style={{width:'100%'}} value={this.state.dictionaryEdit} onChange={this.handleDictionaryChange} />
+                              </div>);
+
+            buttonClasses1 = 'ui positive basic button';
+            buttonClasses2 = 'ui yellow basic button';
+
+            buttonHandler1 = this.handleEditSubmit;
+            buttonHandler2 = this.handleEditCancel;
+
+            buttonContent1 = 'Done';
+            buttonContent2 = 'Cancel';
+        }
+
+        if (this.state.confirmDelete) {
+            buttonClasses1 = 'ui yellow button';
+            buttonClasses2 = 'ui blue basic button';
+
+            buttonHandler1 = this.handleConfirmDelete;
+            buttonHandler2 = this.handleCancelDelete;
+
+            buttonContent1 = <i className="big check circle outline icon" style={{margin:'0 auto'}}></i>;
+            buttonContent2 = <i className="big remove circle outline icon" style={{margin:'0 auto'}}></i>;
+        }
+
         return (
             <tr id={this.props.id}>
                 <td colSpan="2">
@@ -256,8 +307,8 @@ var Dictionary = React.createClass({
                 </td>
                 <td>
                     <div className="ui buttons">
-                        <div className={buttonClasses1} onClick={this.state.editMode ? this.handleEditSubmit : this.handleEditStart}>{this.state.editMode ? 'Done' : 'Edit'}</div>
-                        <div className={buttonClasses2} onClick={this.state.editMode ? this.handleEditCancel : this.handleDelete}>{this.state.editMode ? 'Cancel' : 'Delete'}</div>
+                        <div className={buttonClasses1} onClick={buttonHandler1}>{buttonContent1}</div>
+                        <div className={buttonClasses2} onClick={buttonHandler2}>{buttonContent2}</div>
                     </div>
                 </td>
             </tr>
