@@ -11,6 +11,8 @@
         deleteWord($data);
     } elseif ($requestType == 'editWord') {
         editWord($data);
+    } elseif ($requestType == 'addDictionary') {
+        addDictionary($data);
     }
 
     function loadDictionaries($data) {
@@ -155,6 +157,42 @@
             echo $error;
             return;
         }
+    }
+
+    function addDictionary($data) {
+        $dataDecoded = json_decode($data);
+        array_push($dataDecoded, ['dictionaryId'    => getNewId(),
+                                  'name'            => $_POST['name'],
+                                  'words'           => []]);
+        $data = json_encode($dataDecoded, JSON_PRETTY_PRINT);
+        file_put_contents('../data/data.json', $data);
+        echo loadDictionaries($data);
+
+        /*foreach ($dataDecoded as $index => $obj) {
+            if ($obj->dictionaryId == $_POST['currentDictionaryId']) {
+                $dictionaryFound = true;
+                array_push($dataDecoded[$index]->words, ['id'            => getNewId(),
+                                                         'word'          => $_POST['word'],
+                                                         'definition'    => $_POST['definition']]);
+                file_put_contents('../data/data.json', json_encode($dataDecoded, JSON_PRETTY_PRINT));
+                header('HTTP:/1.1 200 OK');
+                header('Content-Type: appliction/json');
+                header('Cache-Control: no-cache');
+                echo json_encode($obj->words, JSON_PRETTY_PRINT);
+                return;
+            }
+        }
+        if (!$dictionaryFound) {
+            $error = json_encode(array(
+                'errorMessage' => 'Error adding word: dictionary id ' . $_POST['currentDictionaryId'] . ' not found'
+            ));
+            error_log($error);
+            header('HTTP/1.1 500 Internal Server Error');
+            header('Content-Type: application/json');
+            header('Cache-Control: no-cache');
+            echo $error;
+            return;
+        }*/
     }
 
     function getNewId() {

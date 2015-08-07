@@ -134,8 +134,8 @@ var NavBar = React.createClass({
         return (
             <nav className="ui fixed menu inverted navbar">
                 <a href="#" className="brand item">Vocabulary List</a>
-                <a href="index.html" className="item active">Home</a>
-                <a href="dictionaries.html" className="item">Dictionaries</a>
+                <a href="index.php" className="item active">Home</a>
+                <a href="dictionaries.php" className="item">Dictionaries</a>
             </nav>
         );
     }
