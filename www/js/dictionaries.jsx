@@ -180,7 +180,19 @@ var Dictionary = React.createClass({
     },
     handleEditStart: function(e) {
         e.preventDefault();
+
+        // Close any other active word edits
+        if (externalEditEvent) {
+            window.dispatchEvent(externalEditEvent);
+        }
+
         this.toggleEditMode();
+    },
+    handleExternalEdit: function(e) {
+        if (this.props.id != e.excepted_id && this.state.editMode) {
+            this.state.dictionaryEdit = this.props.dictionary;
+            this.toggleEditMode();
+        }
     },
     handleDictionaryChange: function(e) {
         this.setState({dictionaryEdit: e.target.value});
@@ -203,6 +215,10 @@ var Dictionary = React.createClass({
                 editEnterEventBound:         false,
                 dictionaryEdit:              this.props.dictionary};
     },
+    componentDidMount: function() {
+        externalEditEvent = new Event('externalEdit', { 'detail': this.props.id });
+        window.addEventListener('externalEdit', this.handleExternalEdit);
+    },
     componentDidUpdate: function() {
         // If editing and enter event hasn't been bound yet
         if (this.state.editMode && !this.state.editEnterEventBound) {
@@ -219,6 +235,11 @@ var Dictionary = React.createClass({
             this.state.editEnterEventBound = true;
             // Highlight dictionary input
             React.findDOMNode(this.refs.dictionary).select();
+        }
+    },
+    componentWillUnmount: function() {
+        if (externalEditEvent) {
+            window.removeEventListener('externalEdit', this.handleExternalEdit);
         }
     },
     render: function() {
